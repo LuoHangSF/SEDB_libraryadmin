@@ -23,7 +23,9 @@ class BookInfoViewForReader(QTableView):
 
     def borrow(self):
         row_index = int(self.sender().whatsThis())
-        book_id = self.__model.index(row_index, 5).data()
+        # book_id = self.__model.index(row_index, 5).data()
+        book_id = int(self.__model.index(row_index, 0).data())
+        
         cursor = Connector.get_cursor()
 
         # 根据模型当前显示判断状态（'否' 表示未借出）

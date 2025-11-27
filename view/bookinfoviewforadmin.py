@@ -30,8 +30,8 @@ class BookInfoViewForAdmin(QTableView):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.horizontalHeader().setStretchLastSection(False)
 
-        # 将“书号”列移动到最前（视觉层重排，不改模型），假设书号在索引 5
-        self._move_book_id_column_to_front(book_id_col=5)
+        # 书号现在就是第 1 列（索引 0），这里的移动等价于“不动”
+        self._move_book_id_column_to_front(book_id_col=0)
 
         # 构建“淘汰”按钮列
         self._build_eliminate_buttons()
@@ -65,8 +65,8 @@ class BookInfoViewForAdmin(QTableView):
             return
 
         row_index = int(self.sender().whatsThis())
-        # 保持你原来的书号列索引：5（如需调整，请改这里）
-        book_id = self.__model.index(row_index, 5).data()
+        # 书号现为索引 0
+        book_id = self.__model.index(row_index, 0).data()
 
         # 先清借阅，再淘汰（删除）书籍
         cursor = Connector.get_cursor()
