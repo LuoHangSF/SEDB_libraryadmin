@@ -65,8 +65,8 @@ class BookInfoViewForAdmin(QTableView):
             return
 
         row_index = int(self.sender().whatsThis())
-        # 书号现为索引 0
-        book_id = self.__model.index(row_index, 0).data()
+        # 书号现为索引 0，且为字符串
+        book_id = str(self.__model.index(row_index, 0).data()).strip()
 
         # 先清借阅，再淘汰（删除）书籍
         cursor = Connector.get_cursor()

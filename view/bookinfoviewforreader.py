@@ -6,6 +6,10 @@ from database.connector import Connector
 from model.bookinfomodel import BookInfoModel
 
 
+# 列索引常量，便于与模型保持一致
+BOOK_ID_COL = 0         # 书号在第 1 列
+BORROWED_FLAG_COL = 5   # “是否已借出”列（'是'/'否'）
+
 class BookInfoViewForReader(QTableView):
 
     def __init__(self, parent=None):
@@ -15,6 +19,7 @@ class BookInfoViewForReader(QTableView):
         self.setModel(self.__model)
         self.__model.update()
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        # 在最后一列放“借阅/归还”按钮
         for i in range(self.__model.rowCount()):
             borrow_button = QPushButton('借阅/归还')
             borrow_button.setWhatsThis(str(i))
@@ -23,13 +28,13 @@ class BookInfoViewForReader(QTableView):
 
     def borrow(self):
         row_index = int(self.sender().whatsThis())
-        # book_id = self.__model.index(row_index, 5).data()
-        book_id = int(self.__model.index(row_index, 0).data())
-        
+        # 书号是字符串，不能转 int
+        book_id = str(self.__model.index(row_index, BOOK_ID_COL).data()).strip()
+
         cursor = Connector.get_cursor()
 
-        # 根据模型当前显示判断状态（'否' 表示未借出）
-        is_borrowed = (self.__model.index(row_index, 4).data() == '是')
+        # 判断“是否已借出”
+        is_borrowed = (str(self.__model.index(row_index, BORROWED_FLAG_COL).data()) == '是')
 
         if not is_borrowed:
             # 借阅前检查个人借阅上限
@@ -43,7 +48,7 @@ class BookInfoViewForReader(QTableView):
                 QMessageBox.information(self, '借阅失败', '该书已被借阅')
                 self.updateData()
                 return
-            # 插入借阅记录
+            # 插入借阅记录（书号为字符串）
             sql = 'INSERT INTO borrow (b_id, u_id) VALUES (%s, %s)'
             cursor.execute(sql, (book_id, SI.g_userId))
             Connector.get_connection()
@@ -65,7 +70,7 @@ class BookInfoViewForReader(QTableView):
 
     def updateData(self, keyword: Optional[str] = None):
         self.__model.update(keyword)
-        # 重建操作按钮
+        # 重建操作按钮（避免模型刷新后索引失效）
         for i in range(self.__model.rowCount()):
             borrow_button = QPushButton('借阅/归还')
             borrow_button.setWhatsThis(str(i))
