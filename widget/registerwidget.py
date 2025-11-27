@@ -21,18 +21,30 @@ class RegisterWidget(QWidget):
         balance = 0
         mobile = self.__ui.m_mobileLineEdit.text()
         unit = self.__ui.m_unitLineEdit.text()
-        role = self.__ui.m_roleComboBox.currentIndex()
+
+        # 数据库 role.r_id 从 1 开始，QComboBox 索引从 0 开始，需要 +1 修正
+        role_id = self.__ui.m_roleComboBox.currentIndex() + 1
+
         if name == '' or password == '' or mobile == '' or unit == '':
             QMessageBox.information(self, '注册失败', '请将信息填写完整再注册')
             return
         if password != password_confirm:
             QMessageBox.information(self, '注册失败', '密码和确认密码输入不一致')
             return
+
         cursor = Connector.get_cursor()
         sql = """
             INSERT INTO user (u_name, password, sex, balance, phone_number, r_id, unit) 
             VALUES (%s, %s, %s, %s, %s, %s, %s);
         """
-        cursor.execute(sql, (name, password, gender, balance, mobile, role, unit))
-        Connector.get_connection()
+        try:
+            cursor.execute(sql, (name, password, gender, balance, mobile, role_id, unit))
+            # 显式提交事务，确保数据持久化
+            conn = Connector.get_connection()
+            if hasattr(conn, "commit"):
+                conn.commit()
+        except Exception as e:
+            QMessageBox.information(self, '注册失败', f'注册过程中出现错误：{e}')
+            return
+
         QMessageBox.information(self, '注册成功', '注册成功')
