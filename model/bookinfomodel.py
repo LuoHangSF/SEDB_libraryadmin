@@ -16,8 +16,8 @@ class BookInfoModel(QAbstractTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.__bookInfoList = []
-        # 最后一列作为操作列（按钮），内部持有 BookID 用于操作
-        self.__headerList = ['标题', '作者', '出版日期', '出版社', '是否已借出', '借阅/归还']
+        # 列顺序：书号放到第一列；最后一列留给视图放按钮（不显示文本）
+        self.__headerList = ['书号', '标题', '作者', '出版日期', '出版社', '是否已借出', '淘汰']
         SI.g_bookInfoModel = self
         self.update()
 
@@ -87,11 +87,12 @@ class BookInfoModel(QAbstractTableModel):
             # row: (b_name, author, publish_date(date or None), publish_name, borrowed(int), book_id)
             publish_date = row[2].strftime('%Y-%m-%d') if row[2] else ''
             self.__bookInfoList.append([
+                row[5],                          # 书号（BookID）-> 第 1 列
                 row[0],                          # 标题
                 row[1],                          # 作者
                 publish_date,                    # 出版日期
                 row[3],                          # 出版社
                 '否' if row[4] == 0 else '是',   # 是否已借出
-                row[5],                          # BookID（操作使用）
+                ''                               # 最后一列留空，供视图放“淘汰”按钮
             ])
         self.endResetModel()
