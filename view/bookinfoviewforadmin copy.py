@@ -1,4 +1,3 @@
-from typing import Optional
 from PySide6.QtWidgets import QTableView, QPushButton, QMessageBox, QHeaderView
 
 from lib.share import SI
@@ -15,6 +14,7 @@ class BookInfoViewForAdmin(QTableView):
         self.setModel(self.__model)
         self.__model.update()
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        # self.setSortingEnabled(True)
         for i in range(self.__model.rowCount()):
             borrow_button = QPushButton('删除')
             borrow_button.setStyleSheet('background-color: red')
@@ -27,20 +27,18 @@ class BookInfoViewForAdmin(QTableView):
         if ret != QMessageBox.StandardButton.Yes:
             return
         row_index = int(self.sender().whatsThis())
-        book_id = self.__model.index(row_index, 5).data()
-        # 先清借阅，再删书籍
-        cursor = Connector.get_cursor()
+        b_id = self.__model.index(row_index, 5).data()
         sql = 'DELETE FROM borrow WHERE b_id = %s'
-        cursor.execute(sql, (book_id,))
-        sql = 'DELETE FROM book WHERE book_id = %s'
-        cursor.execute(sql, (book_id,))
+        cursor = Connector.get_cursor()
+        cursor.execute(sql, b_id)
+        sql = 'DELETE FROM book WHERE b_id = %s'
+        cursor.execute(sql, b_id)
         Connector.get_connection()
         QMessageBox.information(self, '删除成功', '删除成功')
         self.updateData()
 
-    def updateData(self, keyword: Optional[str] = None):
-        self.__model.update(keyword)
-        # 重建操作按钮
+    def updateData(self):
+        self.__model.update()
         for i in range(self.__model.rowCount()):
             borrow_button = QPushButton('删除')
             borrow_button.setStyleSheet('background-color: red')

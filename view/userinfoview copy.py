@@ -1,9 +1,11 @@
-from PySide6.QtWidgets import QTableView, QPushButton, QHeaderView, QListWidget
-from lib.share import SI
+from PySide6.QtWidgets import QTableView, QPushButton, QListWidget, QHeaderView
 from database.connector import Connector
 from model.userinfomodel import UserInfoModel
+from lib.share import SI
+
 
 class UserInfoView(QTableView):
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.__showBorrowWidget = None
@@ -19,12 +21,13 @@ class UserInfoView(QTableView):
     def showBorrow(self):
         cursor = Connector.get_cursor()
         sql = """
-            SELECT b.b_name
-            FROM borrow br
-            JOIN book b ON b.book_id = br.b_id
-            WHERE br.u_id = %s
+            SELECT b_name
+            FROM borrow
+                JOIN book on book.b_id = borrow.b_id
+                JOIN user on user.u_id = borrow.u_id
+            WHERE borrow.u_id = %s 
         """
-        cursor.execute(sql, (SI.g_userId,))
+        cursor.execute(sql, SI.g_userId)
         result = cursor.fetchall()
         self.__showBorrowWidget = QListWidget()
         self.__showBorrowWidget.setWindowTitle('借阅书籍目录')
